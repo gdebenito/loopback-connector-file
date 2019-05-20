@@ -18,6 +18,8 @@ exports.initialize = function initialize(dataSource) {
 	// Initialize the DataAccessObject
 	connector.getDataAccessObject();
 
+	return connector;
+
 };
 
 function FileConnector(settings) {
