@@ -46,18 +46,18 @@ FileConnector.prototype.getDataAccessObject = function () {
 
 	self.DataAccessObject.get = function () {
 		const filePath = path.join(self.root, self.file);
-		const file = fs.readFileSync(filePath, { encoding: 'utf8', flag: 'r' })
+		const file = fs.readFileSync(filePath, 'utf8')
 		return file;
 	}
 
 	self.DataAccessObject.overwrite = function (text) {
 		const filePath = path.join(self.root, self.file);
-		fs.writeFileSync(filePath, text)
+		fs.writeFileSync(filePath, text, 'utf8')
 	}
 
 	self.DataAccessObject.append = function (text) {
 		const filePath = path.join(self.root, self.file);
-		fs.appendFileSync(filePath, text, { encoding: 'utf8', flag: 'w' })
+		fs.appendFileSync(filePath, text, 'utf8')
 	}
 
 	return self.DataAccessObject;

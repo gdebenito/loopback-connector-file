@@ -1,6 +1,6 @@
 {
   "name": "loopback-connector-file",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,5 +10,9 @@
   "license": "ISC",
   "dependencies": {
     "assert": "^2.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gdebenito/loopback-connector-file"
   }
 }
