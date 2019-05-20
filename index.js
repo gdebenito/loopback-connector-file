@@ -8,17 +8,17 @@ const fs = require('fs');
 /**
  * Initialize the connector
  */
-exports.initialize = function initialize(dataSource, callback) {
-	const connector = dataSource.connector = new FileConnector(dataSource.settings, dataSource);
+exports.initialize = function initialize(dataSource) {
+
+	// Initialize the FileConnector with the Datasource settings ( datasource.json )
+	// dataSource.settings is the object representation of datasource.json that is
+	// injected in the constructor of the Datasource ( super(dsConfig) ) 
+	const connector = dataSource.connector = new FileConnector(dataSource.settings);
+
+	// Initialize the DataAccessObject
 	connector.getDataAccessObject();
-	dataSource.connector.dataSource = dataSource;
 
-	if (callback) {
-		process.nextTick(callback);
-	}
 };
-
-
 
 function FileConnector(settings) {
 	assert(typeof settings ===
@@ -27,10 +27,14 @@ function FileConnector(settings) {
 
 	// Set the root path
 	this.root = settings.root;
-
-	// Set the settings path
-	this.file = settings.file;
 };
+
+/**
+ *  This controller don't have the connect method.
+ *  Is not required for localhost filesystem
+ */
+FileConnector.prototype.connect = function () {
+}
 
 
 /**
@@ -41,24 +45,55 @@ FileConnector.prototype.getDataAccessObject = function () {
 		return this.DataAccessObject;
 	}
 	var self = this;
-	var DataAccessObject = {};
+	var DataAccessObject = {
+		getFolder: async function () {
+			// Get the stats of the directory, to know if exists
+			const stats = await fs.stat(self.root);
+			// If is a file then
+			if (stats.isDirectory()) {
+				// Return the files inside the directory
+				const fileNames = await fs.readdir(self.root);
+				return fileNames;
+			}
+
+		},
+		get: async function (file) {
+			// Get the File Path we want to access
+			const filePath = path.join(self.root, file);
+			// Get the stats of the file, to know if exists
+			const stats = await fs.stat(path);
+			// If is a file then
+			if (stats.isFile()) {
+				// Return the data inside the file
+				return await fs.readFile(filePath, 'utf8');;
+			}
+
+		},
+		overwrite: async function (file, text) {
+			const filePath = path.join(self.root, file);
+			const stats = await fs.stat(path);
+			if (stats.isFile()) {
+				await fs.writeFile(filePath, text, 'utf8');
+			}
+		},
+
+		append: async function (file, text) {
+			const filePath = path.join(self.root, file);
+			const stats = await fs.stat(path);
+			if (stats.isFile()) {
+				await fs.appendFile(filePath, text, 'utf8');
+			}
+		},
+
+		delete: async function (file) {
+			const filePath = path.join(self.root, file);
+			const stats = await fs.stat(path);
+			if (stats.isFile()) {
+				await fs.unlink(filePath, text, 'utf8');
+			}
+		},
+
+	};
 	self.DataAccessObject = DataAccessObject;
-
-	self.DataAccessObject.get = function () {
-		const filePath = path.join(self.root, self.file);
-		const file = fs.readFileSync(filePath, 'utf8')
-		return file;
-	}
-
-	self.DataAccessObject.overwrite = function (text) {
-		const filePath = path.join(self.root, self.file);
-		fs.writeFileSync(filePath, text, 'utf8')
-	}
-
-	self.DataAccessObject.append = function (text) {
-		const filePath = path.join(self.root, self.file);
-		fs.appendFileSync(filePath, text, 'utf8')
-	}
-
 	return self.DataAccessObject;
 }

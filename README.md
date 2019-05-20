@@ -6,15 +6,18 @@ file.datasource.json
 {
   "name": "filedatasource", // The name you want
   "connector": "loopback-connector-file", // The loopback connector reposituory
-  "root": "./storage", // The directory you want to access
-  "file": "myfile.txt" // The file you want to serve
+  "root": "./storage" // The directory you want to access
 }
 ```
 
 file.service.ts
 ```ts
 export interface FileService {
-	getFile(): string;
+	async getFolder(): Promise<Array<string>>;
+	async get(file: string): Promise<string>;
+	async overwrite(file: string, data: string): Promise<void>;
+	async append(file: string, data: string): Promise<void>;
+	async delete(file: string): Promise<void>;
 }
 ```
 
