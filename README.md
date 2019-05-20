@@ -13,11 +13,11 @@ file.datasource.json
 file.service.ts
 ```ts
 export interface FileService {
-	getFolder(): Promise<Array<string>>;
-	get(file: string): Promise<string>;
-	overwrite(file: string, data: string): Promise<void>;
-	append(file: string, data: string): Promise<void>;
-	delete(file: string): Promise<void>;
+	getFolder(): Array<string>;
+	get(file: string): string;
+	overwrite(file: string, data: string): void;
+	append(file: string, data: string): void;
+	delete(file: string): void;
 }
 ```
 
@@ -42,24 +42,56 @@ export class FileProvider implements Provider<FileService> {
 
 File Controller example
 ```ts
-import { FileService } from "../services/file.service";
-
-// Uncomment these imports to begin using these cool features!
 
 import { inject } from '@loopback/context';
-import { get } from "@loopback/rest";
+import { get, requestBody, post, put, RequestBodyObject, param } from "@loopback/rest";
+
+const TEXT_PLAIN_REQUEST: RequestBodyObject = {
+	description: '',
+	required: true,
+	content: {
+		'text/plain': {
+			schema: {
+				type: 'string'
+
+			}
+		}
+	}
+
+}
 
 export class FileController {
 	constructor(
 		@inject('file.provider') private fileService: FileService
 	) { }
 
-	@get('/file')
-	async getFile() {
-		// console.log(this.fileService)
-		return this.fileService.getFile();
+	@get('/files')
+	async getFolder() {
+		return this.fileService.getFolder();
 	}
 
+	@get('/files/{filename}')
+	async getFile(
+		@param.path.string('filename') filename: string
+	) {
+		return this.fileService.get(filename);
+	}
+
+	@put('/files/{filename}')
+	async putFile(
+		@param.path.string('filename') filename: string,
+		@requestBody(TEXT_PLAIN_REQUEST) body: string
+	) {
+		return this.fileService.overwrite(filename, body);
+	}
+
+	@post('/files/{filename}')
+	async postFile(
+		@param.path.string('filename') filename: string,
+		@requestBody(TEXT_PLAIN_REQUEST) body: string
+	) {
+		return this.fileService.append(filename, body);
+	}
 }
 ```
 

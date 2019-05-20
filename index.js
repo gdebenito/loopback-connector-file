@@ -17,6 +17,9 @@ exports.initialize = function initialize(dataSource, callback) {
 
 	// Initialize the DataAccessObject
 	connector.getDataAccessObject();
+
+	dataSource.connector.dataSource = dataSource;
+
 	if (callback) {
 		process.nextTick(callback);
 	}
@@ -47,56 +50,78 @@ FileConnector.prototype.getDataAccessObject = function () {
 	if (this.DataAccessObject) {
 		return this.DataAccessObject;
 	}
-	var self = this;
-	var DataAccessObject = {
-		getFolder: async function () {
-			// Get the stats of the directory, to know if exists
-			const stats = await fs.stat(self.root);
-			// If is a file then
-			if (stats.isDirectory()) {
-				// Return the files inside the directory
-				const fileNames = await fs.readdir(self.root);
-				return fileNames;
-			}
+	const self = this;
+	const DataAccessObject = {};
 
-		},
-		get: async function (file) {
-			// Get the File Path we want to access
-			const filePath = path.join(self.root, file);
-			// Get the stats of the file, to know if exists
-			const stats = await fs.stat(path);
-			// If is a file then
-			if (stats.isFile()) {
-				// Return the data inside the file
-				return await fs.readFile(filePath, 'utf8');;
-			}
-
-		},
-		overwrite: async function (file, text) {
-			const filePath = path.join(self.root, file);
-			const stats = await fs.stat(path);
-			if (stats.isFile()) {
-				await fs.writeFile(filePath, text, 'utf8');
-			}
-		},
-
-		append: async function (file, text) {
-			const filePath = path.join(self.root, file);
-			const stats = await fs.stat(path);
-			if (stats.isFile()) {
-				await fs.appendFile(filePath, text, 'utf8');
-			}
-		},
-
-		delete: async function (file) {
-			const filePath = path.join(self.root, file);
-			const stats = await fs.stat(path);
-			if (stats.isFile()) {
-				await fs.unlink(filePath, text, 'utf8');
-			}
-		},
-
-	};
 	self.DataAccessObject = DataAccessObject;
+
+	self.DataAccessObject.getFolder = function () {
+		// Get the stats of the directory, to know if exists
+		const stats = fs.statSync(self.root);
+
+		// If is a directory
+		if (stats.isDirectory()) {
+
+			// Return the files inside the directory
+			const fileNames = fs.readdirSync(self.root);
+			return fileNames;
+		}
+
+	}
+	self.DataAccessObject.get = function (file) {
+		let file;
+
+		// Get the File Path we want to access
+		const filePath = path.join(self.root, file);
+
+		// Get the stats of the file, to know if exists
+		const stats = fs.statSync(filePath);
+
+		// If is a file then
+		if (stats.isFile()) {
+
+			// Return the data inside the file
+			file = fs.readFileSync(filePath, 'utf8');
+		}
+		return file;
+	}
+	self.DataAccessObject.overwrite = function (file, text) {
+		const stats = fs.statSync(self.root);
+		if (stats.isDirectory()) {
+
+			// Valid directory
+			fs.writeFileSync(path.join(self.root, file), text, 'utf8');
+		}
+	}
+
+	self.DataAccessObject.append = function (file, text) {
+		
+		const filePath = path.join(self.root, file);
+		const stats = fs.statSync(filePath);
+
+		if (stats.isFile()) {
+			fs.appendFileSync(filePath, text, 'utf8');
+		} else {
+
+			// File doesn't exist
+			const dir = fs.statSync(self.root);
+
+			// Directory Exists
+			if (dir.isDirectory) {
+
+				// Then new file
+				fs.writeFileSync(filePath, text, 'utf8');
+			}
+		}
+	}
+
+	self.DataAccessObject.delete = function (file) {
+		const filePath = path.join(self.root, file);
+		const stats = fs.statSync(filePath);
+		if (stats.isFile()) {
+			fs.unlinkSync(filePath, text, 'utf8');
+		}
+	}
+
 	return self.DataAccessObject;
 }
