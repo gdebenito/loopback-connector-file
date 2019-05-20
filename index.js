@@ -8,7 +8,7 @@ const fs = require('fs');
 /**
  * Initialize the connector
  */
-exports.initialize = function initialize(dataSource) {
+exports.initialize = function initialize(dataSource, callback) {
 
 	// Initialize the FileConnector with the Datasource settings ( datasource.json )
 	// dataSource.settings is the object representation of datasource.json that is
@@ -17,8 +17,9 @@ exports.initialize = function initialize(dataSource) {
 
 	// Initialize the DataAccessObject
 	connector.getDataAccessObject();
-
-	return connector;
+	if (callback) {
+		process.nextTick(callback);
+	}
 
 };
 
