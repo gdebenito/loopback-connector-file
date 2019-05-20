@@ -13,11 +13,11 @@ file.datasource.json
 file.service.ts
 ```ts
 export interface FileService {
-	async getFolder(): Promise<Array<string>>;
-	async get(file: string): Promise<string>;
-	async overwrite(file: string, data: string): Promise<void>;
-	async append(file: string, data: string): Promise<void>;
-	async delete(file: string): Promise<void>;
+	getFolder(): Promise<Array<string>>;
+	get(file: string): Promise<string>;
+	overwrite(file: string, data: string): Promise<void>;
+	append(file: string, data: string): Promise<void>;
+	delete(file: string): Promise<void>;
 }
 ```
 
